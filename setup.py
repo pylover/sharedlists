@@ -11,7 +11,7 @@ with open(join(dirname(__file__), 'sharedlists', '__init__.py')) as v_file:
 
 
 dependencies = [
-    'restfulpy >= 3.0.0',
+    'restfulpy >= 3.3.0',
 
     # Deployment
     'gunicorn',
