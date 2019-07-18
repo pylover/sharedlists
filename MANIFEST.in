@@ -1,2 +1,2 @@
-include dolphin/alembic.ini
-include dolphin/migration/**/*.py
+include sharedlists/alembic.ini
+include sharedlists/migration/**/*.py
