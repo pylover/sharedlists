@@ -1,9 +1,7 @@
 from bddrest import status, response
 
-from sharedlists import __version__ as appversion
-from sharedlists.models import User, List
-
 from .conftest import RESTAPITestCase
+from sharedlists.models import User
 
 
 class TestListCreate(RESTAPITestCase):
@@ -18,7 +16,7 @@ class TestListCreate(RESTAPITestCase):
     def test_list_create_anonymous(self):
         with self.given(
             'Creating list by an anonymous',
-            '/lists/foo',
+            '/oscar/foo',
             'CREATE',
         ):
             assert status == 401
@@ -27,7 +25,7 @@ class TestListCreate(RESTAPITestCase):
         self.login('oscar@example.com', '12345')
         with self.given(
             'Creating list by an anonymous',
-            '/lists/foo',
+            '/oscar/foo',
             'CREATE',
         ):
             assert status == '200 OK'

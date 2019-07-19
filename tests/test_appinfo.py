@@ -1,9 +1,8 @@
 from bddrest import status, response
 
+from .conftest import RESTAPITestCase
 from sharedlists import __version__ as appversion
 from sharedlists.models import User, List
-
-from .conftest import RESTAPITestCase
 
 
 class TestApplicationInfo(RESTAPITestCase):

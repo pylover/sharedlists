@@ -8,20 +8,8 @@ from .models import User, List
 
 CR = '\n'
 
-class ListController(RestController):
-
-    @text
-    @commit
-    @authorize
-    def create(self, title):
-        me = User.get_current(DBSession)
-        newlist = List(title=title, author=me)
-        DBSession.add(newlist)
-        return str(newlist)
-
 
 class Root(RestController):
-    lists = ListController()
 
     @staticmethod
     def ensure_member(id_):
@@ -73,4 +61,18 @@ class Root(RestController):
 
         return principal.dump()
 
+    @text
+    @commit
+    @authorize
+    def create(self, owner, title):
+        me = User.get_current(DBSession)
+        if me is None:
+            raise HTTPUnauthorized()
+
+        if me.name != owner:
+            raise HTTPForbiden()
+
+        newlist = List(title=title, author=me)
+        DBSession.add(newlist)
+        return str(newlist)
 
