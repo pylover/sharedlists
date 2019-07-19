@@ -23,7 +23,10 @@ addons:
 services:
   - redis-server
 
-install: ./scripts/travis-install.sh
+install:
+  - pip install -U pip
+  - pip install -r requirements-ci.txt
+  - pip install -ve .
 script: py.test --cov=sharedlists tests
 after_success: 
   - coveralls
