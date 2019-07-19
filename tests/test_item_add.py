@@ -29,9 +29,6 @@ class TestItemAdd(RESTAPITestCase):
             'APPEND',
         ):
             assert status == 200
-            assert response.text == \
-f'''
-oscar/foo/bar
-'''
+            assert response.text == 'oscar/foo/bar\n'
 
 

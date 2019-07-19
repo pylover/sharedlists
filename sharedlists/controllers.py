@@ -34,7 +34,6 @@ class Root(RestController):
         else:
             format = lambda i: f'{i.ownerid}\t\t{i.title}'
 
-        yield CR
         for item in query:
             yield f'{format(item)}{CR}'
 
@@ -46,7 +45,6 @@ class Root(RestController):
             .group_by(Item.list) \
             .order_by(Item.list)
 
-        yield CR
         for l in query:
             yield f'({l[1]})\t\t{l[0]}{CR}'
 
@@ -59,7 +57,6 @@ class Root(RestController):
             .group_by(Item.listownerid, Item.list).count()
 
         result = [
-            f'',
             f'Shared Lists v{appversion}',
             f'Total Lists: {users}',
             f'Total Users: {lists}',
@@ -107,7 +104,7 @@ class Root(RestController):
         )
         me.items.append(item)
         DBSession.flush()
-        return ''.join((CR, str(item), CR))
+        return ''.join((str(item), CR))
 
     @authorize
     @commit
@@ -127,7 +124,7 @@ class Root(RestController):
             raise HTTPForbidden()
 
         DBSession.delete(item)
-        return ''.join((CR, str(item), CR))
+        return ''.join((str(item), CR))
 
     @text
     def get(self, owner, listtitle=None, *, verbose=None):

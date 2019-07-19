@@ -33,7 +33,7 @@ class TestApplicationInfo(RESTAPITestCase):
         ):
             assert status == '200 OK'
             assert response.text == \
-f'''
+f'''\
 Shared Lists v{appversion}
 Total Lists: 2
 Total Users: 2
@@ -48,7 +48,7 @@ Total Users: 2
 
             assert status == '200 OK'
             assert response.text == \
-f'''
+f'''\
 Shared Lists v{appversion}
 Total Lists: 2
 Total Users: 2

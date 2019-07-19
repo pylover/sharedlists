@@ -22,7 +22,7 @@ class TestItemList(RESTAPITestCase):
         with self.given('List items', '/oscar/foo'):
             assert status == 200
             assert response.text == \
-f'''
+f'''\
 bar
 qux
 baz
@@ -31,7 +31,7 @@ baz
             when('List detailed items', query='verbose=true')
             assert status == 200
             assert response.text == \
-f'''
+f'''\
 oscar\t\tbar
 oscar\t\tqux
 franz\t\tbaz

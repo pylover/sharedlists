@@ -23,7 +23,7 @@ class TestListList(RESTAPITestCase):
         with self.given('List lists', '/oscar'):
             assert status == 200
             assert response.text == \
-f'''
+f'''\
 (2)\t\tfoo
 (1)\t\tquux
 '''

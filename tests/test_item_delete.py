@@ -33,10 +33,7 @@ class TestItemDelete(RESTAPITestCase):
             'DELETE',
         ):
             assert status == 200
-            assert response.text == \
-f'''
-oscar/foo/bar
-'''
+            assert response.text == 'oscar/foo/bar\n'
 
             when('Delete the item again')
             assert status == 404

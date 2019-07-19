@@ -27,7 +27,7 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'sharedlists = sharedlists:sharedlists.cli_main'
+            'sharedlists = sharedlists:cli_main'
         ]
     }
 )

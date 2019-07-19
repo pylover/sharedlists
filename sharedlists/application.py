@@ -29,3 +29,10 @@ class SharedLists(Application):
             version=__version__
         )
 
+    def insert_mockup(self, args):
+        from restfulpy.orm import DBSession
+        from .models import User
+        oscar = User(id='pylover', email='pylover@example.com', password='12345')
+        DBSession.add(oscar)
+        DBSession.commit()
+
