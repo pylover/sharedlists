@@ -32,3 +32,6 @@ class TestLogin(RESTAPITestCase):
             when('Invalid user', form= given | dict(email='not-exists'))
             assert status == 400
 
+            when('No user', form=given - 'email')
+            assert status == 400
+

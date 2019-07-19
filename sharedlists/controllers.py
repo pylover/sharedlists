@@ -12,15 +12,6 @@ CR = '\n'
 
 class Root(RestController):
 
-    @staticmethod
-    def ensure_user(id_):
-        user = DBSession.query(Member).filter(Member.id == id_).one_or_none()
-
-        if user is None:
-            raise HTTPNotFound(f'No user with id {id}')
-
-        return user
-
     @text
     def info(self):
         from sharedlists import __version__ as appversion
@@ -66,9 +57,9 @@ class Root(RestController):
 
         return principal.dump()
 
-    @text
-    @commit
     @authorize
+    @commit
+    @text
     def append(self, listownerid, listtitle, itemtitle):
         me = User.get_current(DBSession)
         item = Item(
@@ -78,13 +69,11 @@ class Root(RestController):
         )
         me.items.append(item)
         DBSession.flush()
-        yield CR
-        yield str(item)
-        yield CR
+        return ''.join((CR, str(item), CR))
 
-    @text
-    @commit
     @authorize
+    @commit
+    @text
     def delete(self, listowner, listtitle, itemtitle):
         item = DBSession.query(Item) \
             .filter(Item.listownerid == listowner) \
@@ -100,9 +89,7 @@ class Root(RestController):
             raise HTTPForbidden()
 
         DBSession.delete(item)
-        yield CR
-        yield str(item)
-        yield CR
+        return ''.join((CR, str(item), CR))
 
     @classmethod
     def _get_items(cls, owner, listtitle, *, verbose=None):

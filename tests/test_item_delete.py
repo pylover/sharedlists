@@ -38,9 +38,9 @@ f'''
 oscar/foo/bar
 '''
 
-            when(
-                'Delete another\'s item',
-                '/oscar/foo/baz',
-            )
+            when('Delete the item again')
+            assert status == 404
+
+            when('Delete another\'s item', '/oscar/foo/baz')
             assert status == 403
 
