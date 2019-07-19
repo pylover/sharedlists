@@ -11,7 +11,7 @@ class TestApplicationInfo(RESTAPITestCase):
     @classmethod
     def mockup(cls):
         session = cls.create_session()
-        oscar = User(name='oscar', email='oscar@example.com')
+        oscar = User(name='oscar', email='oscar@example.com', password='12345')
         foo = List(title='Foo', author=oscar)
         session.add(foo)
         session.commit()
@@ -19,25 +19,24 @@ class TestApplicationInfo(RESTAPITestCase):
     def test_info_anonymous(self):
         with self.given(
             'Getting the application information by an anonymous',
-            '/info'
+            verb='INFO'
         ):
-
             assert status == '200 OK'
             assert response.text == f'Shared Lists v{appversion}\r\n' \
                 'Total Lists: 1\r\n' \
                 'Total Users: 1\r\n'
 
     def test_info_authenticated(self):
-        self.login('oscar@example.com')
+        self.login('oscar@example.com', '12345')
         with self.given(
             'Getting the application information by an authenticated user',
-            '/info'
+            verb='INFO'
         ):
 
             assert status == '200 OK'
             assert response.text == f'Shared Lists v{appversion}\r\n' \
                 'Total Lists: 1\r\n' \
                 'Total Users: 1\r\n' \
-                'My Lists: \r\n'
+                'My Lists: 1\r\n'
 
 

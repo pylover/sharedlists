@@ -1,5 +1,5 @@
-from nanohttp import text
-from restfulpy.controllers import RootController
+from nanohttp import text, HTTPBadRequest, context
+from restfulpy.controllers import RestController
 from restfulpy.orm import DBSession
 
 from .models import User, List
@@ -8,7 +8,16 @@ from .models import User, List
 CR = '\r\n'
 
 
-class Root(RootController):
+class Root(RestController):
+
+    @staticmethod
+    def ensure_member(id_):
+        member = DBSession.query(Member).filter(Member.id == id_).one_or_none()
+
+        if member is None:
+            raise HTTPNotFound(f'No member with id {id}')
+
+        return member
 
     @text
     def info(self):
@@ -29,4 +38,24 @@ class Root(RootController):
 
         result.append('')
         return CR.join(result)
+
+    @text
+    def login(self):
+        email = context.form.get('email')
+        password = context.form.get('password')
+
+        def bad():
+            raise HTTPBadRequest('Invalid email or password')
+
+        if not (email and password):
+            bad()
+
+        principal = context.application \
+            .__authenticator__ \
+            .login((email, password))
+
+        if principal is None:
+            bad()
+
+        return principal.dump()
 

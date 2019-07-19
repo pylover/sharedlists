@@ -3,10 +3,11 @@ from os.path import dirname
 from restfulpy import Application
 
 from .controllers import Root
+from .authentication import Authenticator
 
 
 class SharedLists(Application):
-    #__authenticator__ = Authenticator()
+    __authenticator__ = Authenticator()
     __configuration__ = '''
       db:
         url: postgresql://postgres:postgres@localhost/sharelists_dev

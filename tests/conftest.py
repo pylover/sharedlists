@@ -19,14 +19,14 @@ class RESTAPITestCase(ApplicableTestCase):
         #r'^/lists.*': List.json_metadata()['fields']
     }
 
-    def login(self, email):
-        user = self._session.query(User).filter(User.email == email) \
-            .one_or_none()
-
-        if user is None:
-            raise ValueError(f'User not Found: {email}')
-
-        principal = user.create_jwt_principal()
-        token = principal.dump()
-        self._authentication_token = token.decode('utf-8')
+    def login(self, email, password):
+        with self.given(
+                None,
+                '/',
+                'LOGIN',
+                form=dict(email=email, password=password),
+        ) as story:
+            response = story.response
+            assert response.status == '200 OK'
+            self._authentication_token = response.text
 
