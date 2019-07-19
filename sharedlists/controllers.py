@@ -122,3 +122,19 @@ class Root(RestController):
         DBSession.delete(item)
         return str(item)
 
+    @text
+    def get(self, owner, listtitle, itemtitle=None, *, verbose=None):
+        query = DBSession.query(Item) \
+            .filter(Item.listowner == owner) \
+            .filter(Item.list == listtitle) \
+            .order_by(Item.created_at)
+
+        if verbose is None:
+            format = lambda i: f'{i.title}'
+        else:
+            format = lambda i: f'{i.owner}\t\t{i.title}'
+
+        yield CR
+        for item in query:
+            yield f'{format(item)}{CR}'
+
