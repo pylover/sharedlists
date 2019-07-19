@@ -2,7 +2,7 @@ import os
 import uuid
 from _sha256 import sha256
 
-from sqlalchemy import Integer, Unicode, ForeignKey
+from sqlalchemy import Integer, Unicode, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.orm import synonym
 from nanohttp import context
 from restfulpy.orm import DeclarativeBase, Field, relationship, \
@@ -10,25 +10,18 @@ from restfulpy.orm import DeclarativeBase, Field, relationship, \
 from restfulpy.principal import JWTPrincipal, JWTRefreshToken
 
 
+USER_NAME_SQLTYPE = Unicode(16)
+LIST_TITLE_SQLTYPE = Unicode(50)
+ITEM_TITLE_SQLTYPE = Unicode(50)
+
+
 class User(TimestampMixin, DeclarativeBase):
     __tablename__ = 'user'
 
-    id = Field(
-        Integer,
-        primary_key=True,
-        readonly=True,
-        not_none=True,
-        required=False,
-        label='ID',
-        minimum=1,
-        example=1,
-        protected=False,
-    )
     email = Field(
         Unicode(100),
         index=True,
         unique=True,
-
         not_none=True,
         required=True,
         python_type=str,
@@ -38,11 +31,11 @@ class User(TimestampMixin, DeclarativeBase):
         label='Email',
     )
 
-    name = Field(
-        Unicode(16),
+    id = Field(
+        USER_NAME_SQLTYPE,
         not_none=True,
         required=True,
-        unique=True,
+        primary_key=True
     )
 
     role = Field(
@@ -55,7 +48,6 @@ class User(TimestampMixin, DeclarativeBase):
 
     lists = relationship(
         'List',
-        back_populates='author',
         lazy='dynamic',
         protected=True
     )
@@ -119,7 +111,6 @@ class User(TimestampMixin, DeclarativeBase):
 
         return JWTPrincipal(dict(
             id=self.id,
-            name=self.name,
             role=self.role,
             sessionId=session_id,
         ))
@@ -143,34 +134,51 @@ class User(TimestampMixin, DeclarativeBase):
 class List(ModifiedMixin, DeclarativeBase):
     __tablename__ = 'list'
 
-    id = Field(
-        Integer,
-        primary_key=True,
-        readonly=True,
-        not_none=True,
-        required=False,
-        label='ID',
-        minimum=1,
-        example=1,
-        protected=False,
-    )
     title = Field(
-        Unicode(50),
-        unique=True,
+        LIST_TITLE_SQLTYPE,
         not_none=True,
         required=True,
         index=True,
+        primary_key=True
     )
 
-    author_id = Field(ForeignKey('user.id'))
-    author = relationship('User', back_populates='lists')
+    owner = Field(ForeignKey('user.id'), primary_key=True)
+
+    items = relationship(
+        'Item',
+        lazy='dynamic',
+        protected=True
+    )
 
     @property
     def fulltitle(self):
-        return f'{self.author.name}/{self.title}'
+        return f'{self.owner}/{self.title}'
 
     def __str__(self):
         return \
 f'''
 List: {self.fulltitle}
 '''
+
+
+class Item(ModifiedMixin, DeclarativeBase):
+    __tablename__ = 'item'
+
+    title = Field(
+        ITEM_TITLE_SQLTYPE,
+        primary_key=True,
+        not_none=True,
+        required=True,
+    )
+
+    owner = Field(USER_NAME_SQLTYPE, primary_key=True)
+    list = Field(LIST_TITLE_SQLTYPE, primary_key=True)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [owner, list],
+            [List.owner, List.title],
+        ),
+    )
+
+

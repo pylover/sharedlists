@@ -9,7 +9,7 @@ class TestListCreate(RESTAPITestCase):
     @classmethod
     def mockup(cls):
         session = cls.create_session()
-        oscar = User(name='oscar', email='oscar@example.com', password='12345')
+        oscar = User(id='oscar', email='oscar@example.com', password='12345')
         session.add(oscar)
         session.commit()
 

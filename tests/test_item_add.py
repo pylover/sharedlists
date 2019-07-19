@@ -9,9 +9,9 @@ class TestItemAdd(RESTAPITestCase):
     @classmethod
     def mockup(cls):
         session = cls.create_session()
-        oscar = User(name='oscar', email='oscar@example.com', password='12345')
-        foo = List(title='foo', author=oscar)
-        session.add(foo)
+        oscar = User(id='oscar', email='oscar@example.com', password='12345')
+        oscar.lists.append(List(title='Foo'))
+        session.add(oscar)
         session.commit()
 
     def test_item_add_anonymous(self):

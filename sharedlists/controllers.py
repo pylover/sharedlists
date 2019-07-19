@@ -12,13 +12,22 @@ CR = '\n'
 class Root(RestController):
 
     @staticmethod
-    def ensure_member(id_):
-        member = DBSession.query(Member).filter(Member.id == id_).one_or_none()
+    def ensure_user(id_):
+        user = DBSession.query(Member).filter(Member.id == id_).one_or_none()
 
-        if member is None:
-            raise HTTPNotFound(f'No member with id {id}')
+        if user is None:
+            raise HTTPNotFound(f'No user with id {id}')
 
-        return member
+        return user
+
+    @staticmethod
+    def ensure_list(owner, title):
+        list_ = DBSession.query(List).filter(List.title == title).one_or_none()
+
+        if list_ is None:
+            raise HTTPNotFound(f'List not found: {id}')
+
+        return list_
 
     @text
     def info(self):
@@ -69,10 +78,19 @@ class Root(RestController):
         if me is None:
             raise HTTPUnauthorized()
 
-        if me.name != owner:
+        if me.id != owner:
             raise HTTPForbiden()
 
-        newlist = List(title=title, author=me)
+        newlist = List(title=title)
+        me.lists.append(newlist)
+        DBSession.flush()
+        return str(newlist)
+
+    @text
+    @commit
+    @authorize
+    def append(self, owner, title, item):
+        list_ = DBSession.query(List).filter(List.title == title).one_or_none()
         DBSession.add(newlist)
         return str(newlist)
 
