@@ -1,4 +1,4 @@
-from bddrest import status, response
+from bddrest import status, response, given, when
 
 from .conftest import RESTAPITestCase
 from sharedlists.models import User
@@ -28,4 +28,7 @@ class TestLogin(RESTAPITestCase):
 
             assert status == '200 OK'
             assert len(response.text.split('.')) == 3
+
+            when('Invalid user', form= given | dict(email='not-exists'))
+            assert status == 400
 

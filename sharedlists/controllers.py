@@ -57,16 +57,6 @@ class Root(RestController):
         if not (email and password):
             bad()
 
-        if '@' not in email:
-            email = DBSession.query(User.email) \
-                .filter(User.id == email) \
-                .one_or_none()
-
-            if email is None:
-                bad()
-
-            email = email[0]
-
         principal = context.application \
             .__authenticator__ \
             .login((email, password))
