@@ -1,7 +1,7 @@
 from bddrest import status, response
 
 from .conftest import RESTAPITestCase
-from sharedlists.models import User, List, Item
+from sharedlists.models import User, Item
 
 
 class TestItemAdd(RESTAPITestCase):
@@ -10,7 +10,6 @@ class TestItemAdd(RESTAPITestCase):
     def mockup(cls):
         session = cls.create_session()
         oscar = User(id='oscar', email='oscar@example.com', password='12345')
-        oscar.lists.append(List(title='foo'))
         session.add(oscar)
         session.commit()
 
@@ -32,7 +31,7 @@ class TestItemAdd(RESTAPITestCase):
             assert status == 200
             assert response.text == \
 f'''
-Item: oscar/foo/bar
+oscar/foo/bar
 '''
 
 

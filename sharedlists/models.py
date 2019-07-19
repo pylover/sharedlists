@@ -47,12 +47,6 @@ class User(TimestampMixin, DeclarativeBase):
         default='user',
     )
 
-    lists = relationship(
-        'List',
-        lazy='dynamic',
-        protected=True
-    )
-
     _password = Field(
         'password',
         Unicode(128),
@@ -132,36 +126,6 @@ class User(TimestampMixin, DeclarativeBase):
             .one_or_none()
 
 
-class List(ModifiedMixin, DeclarativeBase):
-    __tablename__ = 'list'
-
-    title = Field(
-        LIST_TITLE_SQLTYPE,
-        not_none=True,
-        required=True,
-        index=True,
-        primary_key=True
-    )
-
-    owner = Field(ForeignKey('user.id'), primary_key=True)
-
-    items = relationship(
-        'Item',
-        lazy='dynamic',
-        protected=True
-    )
-
-    @property
-    def fulltitle(self):
-        return f'{self.owner}/{self.title}'
-
-    def __str__(self):
-        return \
-f'''
-List: {self.fulltitle}
-'''
-
-
 class Item(ModifiedMixin, DeclarativeBase):
     __tablename__ = 'item'
 
@@ -172,29 +136,33 @@ class Item(ModifiedMixin, DeclarativeBase):
         required=True,
     )
 
-    listowner = Field(USER_NAME_SQLTYPE)
     list = Field(LIST_TITLE_SQLTYPE)
-    owner = Field(ForeignKey('user.id'), default=lambda: context.identity.id)
+    listownerid = Field(ForeignKey('user.id'))
+    listowner = relationship(
+        'User',
+        foreign_keys=[listownerid]
+    )
+
+    ownerid = Field(ForeignKey('user.id'))
+    owner = relationship(
+        'User',
+        backref='items',
+        foreign_keys=[ownerid]
+    )
+
 
     __table_args__ = (
         UniqueConstraint(
-            listowner, list, title,
-            name='uix_owner_list_title'
-        ),
-        ForeignKeyConstraint(
-            [listowner, list],
-            [List.owner, List.title],
+            listownerid, list, title,
+            name='uix_ownerid_list_title'
         ),
     )
 
     @property
     def fulltitle(self):
-        return f'{self.listowner}/{self.list}/{self.title}'
+        return f'{self.listownerid}/{self.list}/{self.title}'
 
     def __str__(self):
-        return \
-f'''
-Item: {self.fulltitle}
-'''
+        return f'{self.fulltitle}'
 
 

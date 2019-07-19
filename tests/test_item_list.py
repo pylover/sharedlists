@@ -1,7 +1,7 @@
 from bddrest import status, response, when
 
 from .conftest import RESTAPITestCase
-from sharedlists.models import User, List, Item
+from sharedlists.models import User, Item
 
 
 class TestItemList(RESTAPITestCase):
@@ -11,36 +11,28 @@ class TestItemList(RESTAPITestCase):
         session = cls.create_session()
         oscar = User(id='oscar', email='oscar@example.com', password='12345')
         franz = User(id='franz', email='franz@example.com', password='12345')
-        foo = List(title='foo')
-        foo.items.append(Item(title='bar', owner=oscar.id))
-        foo.items.append(Item(title='baz', owner=franz.id))
-        foo.items.append(Item(title='qux', owner=oscar.id))
-        oscar.lists.append(foo)
+        oscar.items.append(Item(listowner=oscar, list='foo', title='bar'))
+        franz.items.append(Item(listowner=oscar, list='foo', title='baz'))
+        oscar.items.append(Item(listowner=oscar, list='foo', title='qux'))
         session.add(oscar)
         session.add(franz)
         session.commit()
 
     def test_item_list(self):
-        with self.given(
-            'Delete an item from a list by anonymous',
-            '/oscar/foo',
-        ):
+        with self.given('List items', '/oscar/foo'):
             assert status == 200
             assert response.text == \
 f'''
 bar
-baz
 qux
+baz
 '''
 
-            when(
-                'Delete another\'s item',
-                query='verbose=true'
-            )
+            when('List detailed items', query='verbose=true')
             assert status == 200
             assert response.text == \
 f'''
 oscar\t\tbar
-franz\t\tbaz
 oscar\t\tqux
+franz\t\tbaz
 '''

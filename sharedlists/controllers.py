@@ -1,9 +1,10 @@
+from sqlalchemy import func
 from nanohttp import text, HTTPBadRequest, context, HTTPNotFound, HTTPForbidden
 from restfulpy.controllers import RestController
 from restfulpy.orm import DBSession, commit
 from restfulpy.authorization import authorize
 
-from .models import User, List, Item
+from .models import User, Item
 
 
 CR = '\n'
@@ -20,24 +21,14 @@ class Root(RestController):
 
         return user
 
-    @staticmethod
-    def ensure_list(owner, title):
-        list_ = DBSession.query(List) \
-            .filter(List.owner == owner) \
-            .filter(List.title == title) \
-            .one_or_none()
-
-        if list_ is None:
-            raise HTTPNotFound(f'List not found: {id}')
-
-        return list_
-
     @text
     def info(self):
         from sharedlists import __version__ as appversion
 
         users = DBSession.query(User).count()
-        lists = DBSession.query(List).count()
+        lists = DBSession.query(Item.listownerid, Item.list) \
+            .group_by(Item.listownerid, Item.list).count()
+
         result = [
             f'',
             f'Shared Lists v{appversion}',
@@ -47,7 +38,9 @@ class Root(RestController):
 
         me = User.get_current(DBSession)
         if me is not None:
-            mylists = me.lists.count()
+            mylists = DBSession.query(Item.listownerid, Item.list) \
+                .filter(Item.listownerid == me.id) \
+                .group_by(Item.listownerid, Item.list).count()
             result.append(f'My Lists: {mylists}')
 
         result.append('')
@@ -86,55 +79,76 @@ class Root(RestController):
     @text
     @commit
     @authorize
-    def create(self, owner, title):
+    def append(self, listownerid, listtitle, itemtitle):
         me = User.get_current(DBSession)
-        if me is None:
-            raise HTTPUnauthorized()
-
-        if me.id != owner:
-            raise HTTPForbiden()
-
-        newlist = List(title=title)
-        me.lists.append(newlist)
+        item = Item(
+            listownerid=listownerid,
+            list=listtitle,
+            title=itemtitle
+        )
+        me.items.append(item)
         DBSession.flush()
-        return str(newlist)
+        yield CR
+        yield str(item)
+        yield CR
 
     @text
     @commit
     @authorize
-    def append(self, owner, listtitle, itemtitle):
-        list_ = self.ensure_list(owner, listtitle)
-        item = Item(title=itemtitle)
-        list_.items.append(item)
-        DBSession.flush()
-        return str(item)
+    def delete(self, listowner, listtitle, itemtitle):
+        item = DBSession.query(Item) \
+            .filter(Item.listownerid == listowner) \
+            .filter(Item.list == listtitle) \
+            .filter(Item.title == itemtitle) \
+            .one_or_none()
 
-    @text
-    @commit
-    @authorize
-    def delete(self, owner, listtitle, itemtitle):
+        if item is None:
+            raise HTTPNotFound()
+
         me = User.get_current(DBSession)
-        list_ = self.ensure_list(owner, listtitle)
-        item = list_.items.filter(Item.title == itemtitle).one_or_none()
-        if me.id != item.owner:
+        if me.id != item.ownerid or me.id != item.listownerid:
             raise HTTPForbidden()
 
         DBSession.delete(item)
-        return str(item)
+        yield CR
+        yield str(item)
+        yield CR
 
-    @text
-    def get(self, owner, listtitle, itemtitle=None, *, verbose=None):
+    @classmethod
+    def _get_items(cls, owner, listtitle, *, verbose=None):
         query = DBSession.query(Item) \
-            .filter(Item.listowner == owner) \
+            .filter(Item.listownerid == owner) \
             .filter(Item.list == listtitle) \
-            .order_by(Item.created_at)
+            .order_by(Item.id)
 
         if verbose is None:
             format = lambda i: f'{i.title}'
         else:
-            format = lambda i: f'{i.owner}\t\t{i.title}'
+            format = lambda i: f'{i.ownerid}\t\t{i.title}'
 
         yield CR
         for item in query:
             yield f'{format(item)}{CR}'
+
+    @classmethod
+    def _get_lists(cls, owner):
+        query = DBSession \
+            .query(Item.list, func.count(Item.title)) \
+            .filter(Item.listownerid == owner) \
+            .group_by(Item.list) \
+            .order_by(Item.list)
+
+
+        yield CR
+        for l in query:
+            yield f'({l[1]})\t\t{l[0]}{CR}'
+
+
+    @text
+    def get(self, owner, listtitle=None, itemtitle=None, *, verbose=None):
+        if owner and listtitle:
+            return self._get_items(owner, listtitle, verbose=verbose)
+
+        if owner:
+            return self._get_lists(owner)
 

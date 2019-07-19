@@ -2,7 +2,7 @@ from bddrest import status, response
 
 from .conftest import RESTAPITestCase
 from sharedlists import __version__ as appversion
-from sharedlists.models import User, List
+from sharedlists.models import User, Item
 
 
 class TestApplicationInfo(RESTAPITestCase):
@@ -11,8 +11,19 @@ class TestApplicationInfo(RESTAPITestCase):
     def mockup(cls):
         session = cls.create_session()
         oscar = User(id='oscar', email='oscar@example.com', password='12345')
-        oscar.lists.append(List(title='Foo'))
+        franz = User(id='franz', email='franz@example.com', password='12345')
+        oscar.items.append(Item(
+            listowner=oscar,
+            list='foo',
+            title='bar'
+        ))
+        oscar.items.append(Item(
+            listowner=franz,
+            list='quux',
+            title='baz'
+        ))
         session.add(oscar)
+        session.add(franz)
         session.commit()
 
     def test_info_anonymous(self):
@@ -24,8 +35,8 @@ class TestApplicationInfo(RESTAPITestCase):
             assert response.text == \
 f'''
 Shared Lists v{appversion}
-Total Lists: 1
-Total Users: 1
+Total Lists: 2
+Total Users: 2
 '''
 
     def test_info_authenticated(self):
@@ -39,8 +50,8 @@ Total Users: 1
             assert response.text == \
 f'''
 Shared Lists v{appversion}
-Total Lists: 1
-Total Users: 1
+Total Lists: 2
+Total Users: 2
 My Lists: 1
 '''
 

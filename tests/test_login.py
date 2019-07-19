@@ -1,9 +1,7 @@
 from bddrest import status, response
 
-from sharedlists import __version__ as appversion
-from sharedlists.models import User, List
-
 from .conftest import RESTAPITestCase
+from sharedlists.models import User
 
 
 class TestLogin(RESTAPITestCase):
