@@ -1,8 +1,10 @@
 from os import path
 
 from restfulpy.testing import ApplicableTestCase
+from restfulpy.principal import JWTPrincipal
 
 from sharedlists import SharedLists
+from sharedlists.models import User
 
 
 HERE = path.abspath(path.dirname(__file__))
@@ -17,14 +19,14 @@ class RESTAPITestCase(ApplicableTestCase):
         #r'^/lists.*': List.json_metadata()['fields']
     }
 
-    def login(self, email, organization_id=None):
-        member = self._session.query(Member).filter(Member.email == email) \
+    def login(self, email):
+        user = self._session.query(User).filter(User.email == email) \
             .one_or_none()
 
-        if member is None:
-            raise ValueError(f'Member not Found: {email}')
+        if user is None:
+            raise ValueError(f'User not Found: {email}')
 
-        principal = member.create_jwt_principal()
+        principal = user.create_jwt_principal()
         token = principal.dump()
         self._authentication_token = token.decode('utf-8')
 

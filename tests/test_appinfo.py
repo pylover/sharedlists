@@ -16,15 +16,28 @@ class TestApplicationInfo(RESTAPITestCase):
         session.add(foo)
         session.commit()
 
-    def test_info(self):
+    def test_info_anonymous(self):
         with self.given(
-            'Getting the application information',
+            'Getting the application information by an anonymous',
             '/info'
         ):
+
             assert status == '200 OK'
             assert response.text == f'Shared Lists v{appversion}\r\n' \
                 'Total Lists: 1\r\n' \
                 'Total Users: 1\r\n'
 
+    def test_info_authenticated(self):
+        self.login('oscar@example.com')
+        with self.given(
+            'Getting the application information by an authenticated user',
+            '/info'
+        ):
+
+            assert status == '200 OK'
+            assert response.text == f'Shared Lists v{appversion}\r\n' \
+                'Total Lists: 1\r\n' \
+                'Total Users: 1\r\n' \
+                'My Lists: \r\n'
 
 

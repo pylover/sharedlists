@@ -1,7 +1,9 @@
 import uuid
 
+from nanohttp import context
 from restfulpy.orm import DeclarativeBase, Field, relationship, \
     TimestampMixin, ModifiedMixin
+from restfulpy.principal import JWTPrincipal
 from sqlalchemy import Integer, Unicode, ForeignKey
 
 
@@ -51,6 +53,7 @@ class User(TimestampMixin, DeclarativeBase):
     lists = relationship(
         'List',
         back_populates='author',
+        lazy='dynamic',
         protected=True
     )
 
@@ -60,7 +63,7 @@ class User(TimestampMixin, DeclarativeBase):
 
         return JWTPrincipal(dict(
             id=self.id,
-            title=self.title,
+            name=self.name,
             role=self.role,
             sessionId=session_id,
         ))
@@ -69,6 +72,16 @@ class User(TimestampMixin, DeclarativeBase):
         return JWTRefreshToken(dict(
             id=self.id
         ))
+
+    @classmethod
+    def get_current(cls, session):
+        if not hasattr(context, 'identity') or context.identity is None:
+            return None
+
+        principal = context.identity
+        return session.query(cls) \
+            .filter(cls.id == principal.payload.get('id')) \
+            .one_or_none()
 
 
 class List(ModifiedMixin, DeclarativeBase):
