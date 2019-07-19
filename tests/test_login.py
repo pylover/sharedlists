@@ -13,13 +13,12 @@ class TestLogin(RESTAPITestCase):
         session = cls.create_session()
 
         oscar = User(
-            name='oscar',
+            id='oscar',
             email='oscar@example.com',
             password = 'password'
         )
 
-        foo = List(title='Foo', author=oscar)
-        session.add(foo)
+        session.add(oscar)
         session.commit()
 
     def test_login(self):

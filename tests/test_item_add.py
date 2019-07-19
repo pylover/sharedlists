@@ -17,8 +17,8 @@ class TestItemAdd(RESTAPITestCase):
     def test_item_add_anonymous(self):
         with self.given(
             'Adding an item to a list by anonymous',
-            '/lists/foo/bar',
-            'ADD',
+            '/oscar/foo/bar',
+            'APPEND',
         ):
             assert status == 401
 
