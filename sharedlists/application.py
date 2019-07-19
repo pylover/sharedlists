@@ -13,7 +13,6 @@ class SharedLists(Application):
         url: postgresql://postgres:postgres@localhost/sharelists_dev
         test_url: postgresql://postgres:postgres@localhost/sharelists_test
         administrative_url: postgresql://postgres:postgres@localhost/postgres
-        echo: true
 
       migration:
         directory: %(root_path)s/migration

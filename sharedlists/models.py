@@ -5,7 +5,6 @@ from _sha256 import sha256
 from sqlalchemy import Integer, Unicode, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
 from sqlalchemy.orm import synonym
-from nanohttp import context
 from restfulpy.orm import DeclarativeBase, Field, relationship, \
     TimestampMixin, ModifiedMixin
 from restfulpy.principal import JWTPrincipal, JWTRefreshToken
@@ -110,16 +109,6 @@ class User(TimestampMixin, DeclarativeBase):
         return JWTRefreshToken(dict(
             id=self.id
         ))
-
-    @classmethod
-    def get_current(cls, session):
-        if not hasattr(context, 'identity') or context.identity is None:
-            return None
-
-        principal = context.identity
-        return session.query(cls) \
-            .filter(cls.id == principal.payload.get('id')) \
-            .one_or_none()
 
 
 class Item(ModifiedMixin, DeclarativeBase):

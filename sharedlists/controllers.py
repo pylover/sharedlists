@@ -12,6 +12,44 @@ CR = '\n'
 
 class Root(RestController):
 
+    @classmethod
+    def _get_current_user(cls):
+        if not hasattr(context, 'identity') or context.identity is None:
+            return None
+
+        principal = context.identity
+        return DBSession.query(User) \
+            .filter(User.id == principal.payload.get('id')) \
+            .one_or_none()
+
+    @classmethod
+    def _get_items(cls, owner, listtitle, *, verbose=None):
+        query = DBSession.query(Item) \
+            .filter(Item.listownerid == owner) \
+            .filter(Item.list == listtitle) \
+            .order_by(Item.id)
+
+        if verbose is None:
+            format = lambda i: f'{i.title}'
+        else:
+            format = lambda i: f'{i.ownerid}\t\t{i.title}'
+
+        yield CR
+        for item in query:
+            yield f'{format(item)}{CR}'
+
+    @classmethod
+    def _get_lists(cls, owner):
+        query = DBSession \
+            .query(Item.list, func.count(Item.title)) \
+            .filter(Item.listownerid == owner) \
+            .group_by(Item.list) \
+            .order_by(Item.list)
+
+        yield CR
+        for l in query:
+            yield f'({l[1]})\t\t{l[0]}{CR}'
+
     @text
     def info(self):
         from sharedlists import __version__ as appversion
@@ -27,7 +65,7 @@ class Root(RestController):
             f'Total Users: {lists}',
         ]
 
-        me = User.get_current(DBSession)
+        me = self._get_current_user()
         if me is not None:
             mylists = DBSession.query(Item.listownerid, Item.list) \
                 .filter(Item.listownerid == me.id) \
@@ -61,7 +99,7 @@ class Root(RestController):
     @commit
     @text
     def append(self, listownerid, listtitle, itemtitle):
-        me = User.get_current(DBSession)
+        me = self._get_current_user()
         item = Item(
             listownerid=listownerid,
             list=listtitle,
@@ -84,41 +122,12 @@ class Root(RestController):
         if item is None:
             raise HTTPNotFound()
 
-        me = User.get_current(DBSession)
+        me = self._get_current_user()
         if me.id != item.ownerid or me.id != item.listownerid:
             raise HTTPForbidden()
 
         DBSession.delete(item)
         return ''.join((CR, str(item), CR))
-
-    @classmethod
-    def _get_items(cls, owner, listtitle, *, verbose=None):
-        query = DBSession.query(Item) \
-            .filter(Item.listownerid == owner) \
-            .filter(Item.list == listtitle) \
-            .order_by(Item.id)
-
-        if verbose is None:
-            format = lambda i: f'{i.title}'
-        else:
-            format = lambda i: f'{i.ownerid}\t\t{i.title}'
-
-        yield CR
-        for item in query:
-            yield f'{format(item)}{CR}'
-
-    @classmethod
-    def _get_lists(cls, owner):
-        query = DBSession \
-            .query(Item.list, func.count(Item.title)) \
-            .filter(Item.listownerid == owner) \
-            .group_by(Item.list) \
-            .order_by(Item.list)
-
-        yield CR
-        for l in query:
-            yield f'({l[1]})\t\t{l[0]}{CR}'
-
 
     @text
     def get(self, owner, listtitle=None, *, verbose=None):
