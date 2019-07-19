@@ -23,8 +23,8 @@ class TestListList(RESTAPITestCase):
             assert status == 200
             assert response.text == \
 f'''\
-(2)\t\toscar/foo
-(1)\t\toscar/quux
+(2)\toscar/foo
+(1)\toscar/quux
 '''
 
 

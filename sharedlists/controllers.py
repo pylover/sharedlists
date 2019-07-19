@@ -50,7 +50,7 @@ class Root(RestController):
             return
 
         for l in query:
-            yield f'({l[0]})\t\t{l[1]}/{l[2]}{CR}'
+            yield f'({l[0]})\t{l[1]}/{l[2]}{CR}'
 
     @text
     def info(self):
