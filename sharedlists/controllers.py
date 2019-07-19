@@ -1,4 +1,4 @@
-from nanohttp import text, HTTPBadRequest, context, HTTPNotFound
+from nanohttp import text, HTTPBadRequest, context, HTTPNotFound, HTTPForbidden
 from restfulpy.controllers import RestController
 from restfulpy.orm import DBSession, commit
 from restfulpy.authorization import authorize
@@ -102,10 +102,23 @@ class Root(RestController):
     @text
     @commit
     @authorize
-    def append(self, owner, title, item):
-        list_ = self.ensure_list(owner, title)
-        item = Item(title=item)
+    def append(self, owner, listtitle, itemtitle):
+        list_ = self.ensure_list(owner, listtitle)
+        item = Item(title=itemtitle)
         list_.items.append(item)
         DBSession.flush()
+        return str(item)
+
+    @text
+    @commit
+    @authorize
+    def delete(self, owner, listtitle, itemtitle):
+        me = User.get_current(DBSession)
+        list_ = self.ensure_list(owner, listtitle)
+        item = list_.items.filter(Item.title == itemtitle).one_or_none()
+        if me.id != item.owner:
+            raise HTTPForbidden()
+
+        DBSession.delete(item)
         return str(item)
 
