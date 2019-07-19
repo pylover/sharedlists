@@ -165,8 +165,12 @@ class List(ModifiedMixin, DeclarativeBase):
     author_id = Field(ForeignKey('user.id'))
     author = relationship('User', back_populates='lists')
 
+    @property
+    def fulltitle(self):
+        return f'{self.author.name}/{self.title}'
+
     def __str__(self):
         return \
 f'''
-List: {self.title}
+List: {self.fulltitle}
 '''

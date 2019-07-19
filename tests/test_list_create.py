@@ -31,6 +31,6 @@ class TestListCreate(RESTAPITestCase):
             assert status == '200 OK'
             assert response.text == \
 f'''
-List: foo
+List: oscar/foo
 '''
 
