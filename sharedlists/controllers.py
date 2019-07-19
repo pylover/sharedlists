@@ -5,7 +5,7 @@ from restfulpy.orm import DBSession
 from .models import User, List
 
 
-CR = '\r\n'
+CR = '\n'
 
 
 class Root(RestController):
@@ -26,6 +26,7 @@ class Root(RestController):
         users = DBSession.query(User).count()
         lists = DBSession.query(List).count()
         result = [
+            f'',
             f'Shared Lists v{appversion}',
             f'Total Lists: {users}',
             f'Total Users: {lists}',

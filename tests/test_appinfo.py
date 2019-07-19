@@ -22,9 +22,12 @@ class TestApplicationInfo(RESTAPITestCase):
             verb='INFO'
         ):
             assert status == '200 OK'
-            assert response.text == f'Shared Lists v{appversion}\r\n' \
-                'Total Lists: 1\r\n' \
-                'Total Users: 1\r\n'
+            assert response.text == \
+f'''
+Shared Lists v{appversion}
+Total Lists: 1
+Total Users: 1
+'''
 
     def test_info_authenticated(self):
         self.login('oscar@example.com', '12345')
@@ -34,9 +37,11 @@ class TestApplicationInfo(RESTAPITestCase):
         ):
 
             assert status == '200 OK'
-            assert response.text == f'Shared Lists v{appversion}\r\n' \
-                'Total Lists: 1\r\n' \
-                'Total Users: 1\r\n' \
-                'My Lists: 1\r\n'
-
+            assert response.text == \
+f'''
+Shared Lists v{appversion}
+Total Lists: 1
+Total Users: 1
+My Lists: 1
+'''
 

@@ -6,7 +6,7 @@ from sharedlists.models import User, List
 from .conftest import RESTAPITestCase
 
 
-class TestApplicationInfo(RESTAPITestCase):
+class TestLogin(RESTAPITestCase):
 
     @classmethod
     def mockup(cls):
