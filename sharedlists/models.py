@@ -54,10 +54,6 @@ class User(TimestampMixin, DeclarativeBase):
         protected=True,
     )
 
-    @property
-    def roles(self):
-        return ['member']
-
     def _set_password(self, password):
         """Hash ``password`` on the fly and store its hashed version."""
         self._password = self._hash_password(password)
