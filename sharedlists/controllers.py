@@ -1,14 +1,27 @@
 from nanohttp import text, HTTPBadRequest, context
 from restfulpy.controllers import RestController
-from restfulpy.orm import DBSession
+from restfulpy.orm import DBSession, commit
+from restfulpy.authorization import authorize
 
 from .models import User, List
 
 
 CR = '\n'
 
+class ListController(RestController):
+
+    @text
+    @commit
+    @authorize
+    def create(self, title):
+        me = User.get_current(DBSession)
+        newlist = List(title=title, author=me)
+        DBSession.add(newlist)
+        return str(newlist)
+
 
 class Root(RestController):
+    lists = ListController()
 
     @staticmethod
     def ensure_member(id_):
@@ -59,4 +72,5 @@ class Root(RestController):
             bad()
 
         return principal.dump()
+
 

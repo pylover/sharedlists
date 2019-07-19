@@ -18,9 +18,8 @@ class TestListCreate(RESTAPITestCase):
     def test_list_create_anonymous(self):
         with self.given(
             'Creating list by an anonymous',
-            '/lists',
+            '/lists/foo',
             'CREATE',
-            form=dict(title='foo')
         ):
             assert status == 401
 
@@ -28,11 +27,12 @@ class TestListCreate(RESTAPITestCase):
         self.login('oscar@example.com', '12345')
         with self.given(
             'Creating list by an anonymous',
-            '/lists',
+            '/lists/foo',
             'CREATE',
-            form=dict(title='foo')
         ):
             assert status == '200 OK'
-            assert response.text == f''
-
+            assert response.text == \
+f'''
+List: foo
+'''
 
