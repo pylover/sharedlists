@@ -1,7 +1,7 @@
 from bddrest import status, response
 
-from .conftest import RESTAPITestCase
 from sharedlists.models import User
+from .conftest import RESTAPITestCase
 
 
 class TestListCreate(RESTAPITestCase):

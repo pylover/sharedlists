@@ -2,7 +2,8 @@ import os
 import uuid
 from _sha256 import sha256
 
-from sqlalchemy import Integer, Unicode, ForeignKey, ForeignKeyConstraint
+from sqlalchemy import Integer, Unicode, ForeignKey, ForeignKeyConstraint, \
+    UniqueConstraint
 from sqlalchemy.orm import synonym
 from nanohttp import context
 from restfulpy.orm import DeclarativeBase, Field, relationship, \
@@ -164,17 +165,21 @@ List: {self.fulltitle}
 class Item(ModifiedMixin, DeclarativeBase):
     __tablename__ = 'item'
 
+    id = Field(Integer, primary_key=True)
     title = Field(
         ITEM_TITLE_SQLTYPE,
-        primary_key=True,
         not_none=True,
         required=True,
     )
 
-    owner = Field(USER_NAME_SQLTYPE, primary_key=True)
-    list = Field(LIST_TITLE_SQLTYPE, primary_key=True)
+    owner = Field(USER_NAME_SQLTYPE)
+    list = Field(LIST_TITLE_SQLTYPE)
 
     __table_args__ = (
+        UniqueConstraint(
+            owner, list, title,
+            name='uix_owner_list_title'
+        ),
         ForeignKeyConstraint(
             [owner, list],
             [List.owner, List.title],
