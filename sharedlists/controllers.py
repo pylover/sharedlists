@@ -138,14 +138,13 @@ class Root(RestController):
             .group_by(Item.list) \
             .order_by(Item.list)
 
-
         yield CR
         for l in query:
             yield f'({l[1]})\t\t{l[0]}{CR}'
 
 
     @text
-    def get(self, owner, listtitle=None, itemtitle=None, *, verbose=None):
+    def get(self, owner, listtitle=None, *, verbose=None):
         if owner and listtitle:
             return self._get_items(owner, listtitle, verbose=verbose)
 
