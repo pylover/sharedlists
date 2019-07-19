@@ -1,9 +1,9 @@
-from nanohttp import text, HTTPBadRequest, context
+from nanohttp import text, HTTPBadRequest, context, HTTPNotFound
 from restfulpy.controllers import RestController
 from restfulpy.orm import DBSession, commit
 from restfulpy.authorization import authorize
 
-from .models import User, List
+from .models import User, List, Item
 
 
 CR = '\n'
@@ -22,7 +22,10 @@ class Root(RestController):
 
     @staticmethod
     def ensure_list(owner, title):
-        list_ = DBSession.query(List).filter(List.title == title).one_or_none()
+        list_ = DBSession.query(List) \
+            .filter(List.owner == owner) \
+            .filter(List.title == title) \
+            .one_or_none()
 
         if list_ is None:
             raise HTTPNotFound(f'List not found: {id}')
@@ -61,6 +64,16 @@ class Root(RestController):
         if not (email and password):
             bad()
 
+        if '@' not in email:
+            email = DBSession.query(User.email) \
+                .filter(User.id == email) \
+                .one_or_none()
+
+            if email is None:
+                bad()
+
+            email = email[0]
+
         principal = context.application \
             .__authenticator__ \
             .login((email, password))
@@ -90,7 +103,9 @@ class Root(RestController):
     @commit
     @authorize
     def append(self, owner, title, item):
-        list_ = DBSession.query(List).filter(List.title == title).one_or_none()
-        DBSession.add(newlist)
-        return str(newlist)
+        list_ = self.ensure_list(owner, title)
+        item = Item(title=item)
+        list_.items.append(item)
+        DBSession.flush()
+        return str(item)
 

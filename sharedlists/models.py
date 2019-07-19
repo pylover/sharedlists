@@ -181,4 +181,14 @@ class Item(ModifiedMixin, DeclarativeBase):
         ),
     )
 
+    @property
+    def fulltitle(self):
+        return f'{self.owner}/{self.list}/{self.title}'
+
+    def __str__(self):
+        return \
+f'''
+Item: {self.fulltitle}
+'''
+
 
