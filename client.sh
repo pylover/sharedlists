@@ -16,7 +16,7 @@ function l.login() {
 }
 
 function curl_() {
-	 curl --header "Authorization: ${SL_TOKEN}" --request $1 --url $SL_HOST/$2
+	 curl --silent --header "Authorization: ${SL_TOKEN}" --request $1 --url $SL_HOST/$2
 }
 
 function l.list() {
