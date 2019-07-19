@@ -23,10 +23,17 @@ class TestListList(RESTAPITestCase):
             assert status == 200
             assert response.text == \
 f'''\
-(2)\toscar/foo
-(1)\toscar/quux
+oscar/foo
+oscar/quux
 '''
 
+        self.login('franz', '12345')
+        with self.given('List lists', '/franz'):
+            assert status == 200
+            assert response.text == \
+f'''\
+oscar/foo
+'''
 
 class TestListEmptyList(RESTAPITestCase):
 

@@ -40,8 +40,8 @@ class Root(RestController):
     @classmethod
     def _get_lists(cls, owner):
         query = DBSession \
-            .query(func.count(Item.title), Item.listownerid, Item.list) \
-            .filter(Item.listownerid == owner) \
+            .query(Item.listownerid, Item.list) \
+            .filter(Item.ownerid == owner) \
             .group_by(Item.listownerid, Item.list) \
             .order_by(Item.list)
 
@@ -50,7 +50,7 @@ class Root(RestController):
             return
 
         for l in query:
-            yield f'({l[0]})\t{l[1]}/{l[2]}{CR}'
+            yield f'{l[0]}/{l[1]}{CR}'
 
     @text
     def info(self):
@@ -131,7 +131,7 @@ class Root(RestController):
         return ''.join((str(item), CR))
 
     @text
-    def get(self, owner, listtitle=None, *, verbose=None):
+    def get(self, owner=None, listtitle=None, *, verbose=None):
         if owner and listtitle:
             return self._get_items(owner, listtitle, verbose=verbose)
 
