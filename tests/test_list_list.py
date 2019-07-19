@@ -23,8 +23,8 @@ class TestListList(RESTAPITestCase):
             assert status == 200
             assert response.text == \
 f'''\
-(2)\t\tfoo
-(1)\t\tquux
+(2)\t\toscar/foo
+(1)\t\toscar/quux
 '''
 
 
@@ -41,3 +41,4 @@ class TestListEmptyList(RESTAPITestCase):
         with self.given('List lists', '/oscar'):
             assert status == 200
             assert response.text == ''
+

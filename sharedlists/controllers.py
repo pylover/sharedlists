@@ -40,9 +40,9 @@ class Root(RestController):
     @classmethod
     def _get_lists(cls, owner):
         query = DBSession \
-            .query(Item.list, func.count(Item.title)) \
+            .query(func.count(Item.title), Item.listownerid, Item.list) \
             .filter(Item.listownerid == owner) \
-            .group_by(Item.list) \
+            .group_by(Item.listownerid, Item.list) \
             .order_by(Item.list)
 
         if not query.count():
@@ -50,7 +50,7 @@ class Root(RestController):
             return
 
         for l in query:
-            yield f'({l[1]})\t\t{l[0]}{CR}'
+            yield f'({l[0]})\t\t{l[1]}/{l[2]}{CR}'
 
     @text
     def info(self):
@@ -96,9 +96,9 @@ class Root(RestController):
 
         return principal.dump()
 
+    @text
     @authorize
     @commit
-    @text
     def append(self, listownerid, listtitle, itemtitle):
         me = self._get_current_user()
         item = Item(
@@ -110,9 +110,9 @@ class Root(RestController):
         DBSession.flush()
         return ''.join((str(item), CR))
 
+    @text
     @authorize
     @commit
-    @text
     def delete(self, listowner, listtitle, itemtitle):
         item = DBSession.query(Item) \
             .filter(Item.listownerid == listowner) \
