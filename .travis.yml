@@ -25,6 +25,7 @@ services:
 
 install:
   - pip install -U pip
+  - pip install git+https://github.com/Carrene/restfulpy.git
   - pip install -r requirements-ci.txt
   - pip install -ve .
 script: py.test --cov=sharedlists tests
