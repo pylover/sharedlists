@@ -29,7 +29,7 @@ class SharedLists(Application):
             version=__version__
         )
 
-    def insert_mockup(self, args):  # pragma: no cover
+    def insert_mockup(self, args=None):  # pragma: no cover
         from restfulpy.orm import DBSession
         from .models import User
         oscar = User(id='pylover', email='pylover@example.com', password='12345')

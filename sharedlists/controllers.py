@@ -45,6 +45,10 @@ class Root(RestController):
             .group_by(Item.list) \
             .order_by(Item.list)
 
+        if not query.count():
+            yield ''
+            return
+
         for l in query:
             yield f'({l[1]})\t\t{l[0]}{CR}'
 
