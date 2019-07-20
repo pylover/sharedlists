@@ -6,12 +6,19 @@
 A set of REST APIs to create shared lists which can manipulated by anyone.
 
 
+### Server
+
+
 ```bash
 pip install -r requirements-dev.txt
+pip install git+https://github.com/Carrene/restfulpy.git
 pip install -e .
 sharedlists db create -m
+./dev.sh
 ```
 
+
+### Client
 
 ```bash
 . client.sh
