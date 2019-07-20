@@ -7,7 +7,17 @@ A set of REST APIs to create shared lists which can manipulated by anyone.
 
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 pip install -e .
 sharedlists db create -m
+```
+
+
+```bash
+. client.sh
+l.login oscar 12345
+l.append oscar/foo/bar
+l.append oscar/foo/baz
+l.list oscar/foo
+l.list
 ```
