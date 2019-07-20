@@ -37,3 +37,8 @@ function l.append() {
 function l.delete() {
 	curl_ DELETE $1
 }
+
+function l.info() {
+	curl_ INFO $1
+}
+

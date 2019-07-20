@@ -27,4 +27,6 @@ l.append oscar/foo/bar
 l.append oscar/foo/baz
 l.list oscar/foo
 l.list
+l.delete oscar/foo/bar
+l.info
 ```
