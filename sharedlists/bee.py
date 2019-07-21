@@ -1,6 +1,7 @@
 """
 The client utility fo sharedlists
 """
+
 import os
 import sys
 import argparse
@@ -18,9 +19,9 @@ success = functools.partial(print, end='')
 settings = DeferredRoot()
 CONFIGFILE = path.join(os.environ['HOME'], '.beerc')
 BUILTIMSETTINGS = '''
-url: http://localhost:5555
-username:
-token:
+  url: http://localhost:5555
+  username:
+  token:
 '''
 
 
