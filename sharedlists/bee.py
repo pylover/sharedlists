@@ -3,6 +3,7 @@ The client utility fo sharedlists
 """
 import os
 import sys
+import argparse
 import functools
 from os import path
 from getpass import getpass
@@ -17,9 +18,18 @@ success = functools.partial(print, end='')
 settings = DeferredRoot()
 CONFIGFILE = path.join(os.environ['HOME'], '.beerc')
 BUILTIMSETTINGS = '''
-url:
+url: http://localhost:5555
+username:
 token:
 '''
+
+
+class ListAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if '/' not in values:
+            values = f'{settings.username}/{values}'
+
+        setattr(namespace, self.dest, values)
 
 
 def dump_config():
@@ -50,9 +60,66 @@ def query(verb, path='/', form=None):
     return response.text
 
 
+class Delete(SubCommand):
+    __command__ = 'delete'
+    __aliases__ = ['d']
+    __arguments__ = [
+        Argument(
+            'list',
+            action=ListAction,
+            default='',
+            help='example: [username/]foo'
+        ),
+        Argument(
+            'item',
+            help='Item to delete'
+        )
+    ]
+
+    def __call__(self, args):
+        success(query('delete', f'{args.list}/{args.item}'))
+
+
+class Append(SubCommand):
+    __command__ = 'append'
+    __aliases__ = ['add', 'a']
+    __arguments__ = [
+        Argument(
+            'list',
+            action=ListAction,
+            default='',
+            help='example: [username/]foo'
+        ),
+        Argument(
+            'item',
+            help='Item to add'
+        )
+    ]
+
+    def __call__(self, args):
+        success(query('append', f'{args.list}/{args.item}'))
+
+
+class Show(SubCommand):
+    __command__ = 'show'
+    __aliases__ = ['s', 'l']
+    __arguments__ = [
+        Argument(
+            'list',
+            nargs='?',
+            action=ListAction,
+            default='',
+            help='example: [username/]foo'
+        )
+    ]
+
+    def __call__(self, args):
+        success(query('get', args.list))
+
+
 class Info(SubCommand):
     __command__ = 'info'
-    __aliases__ = ['i', 'in', 'inf']
+    __aliases__ = ['i']
 
     def __call__(self, args):
         success(query('info'))
@@ -60,16 +127,15 @@ class Info(SubCommand):
 
 class Login(SubCommand):
     __command__ = 'login'
-    __aliases__ = ['lo', 'log', 'logi']
     __arguments__ = [
         Argument('username', help='Username or email')
     ]
     def __call__(self, args):
-        password = getpass()
         settings.token = query('login', form=dict(
             email=args.username,
-            password=password
+            password=getpass()
         ))
+        settings.username = args.username
         dump_config()
 
 
@@ -77,17 +143,20 @@ class Bee(Root):
     __help__ = 'Sharedlists client'
     __arguments__ = [
         Login,
+        Show,
         Info,
+        Append,
+        Delete,
     ]
 
-    def _execute_subcommand(self, args):
+    def main(self, argv=None):
         settings.initialize(BUILTIMSETTINGS)
         if not path.exists(CONFIGFILE):
             dump_config()
         settings.load_file(CONFIGFILE)
-        return super()._execute_subcommand(args)
+        super().main(argv=argv)
 
 
 if __name__ == '__main__':
-    Bee().main(['lo', 'pylover'])
+    Bee().main(['s', 'foo'])
 

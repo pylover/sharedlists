@@ -1,3 +1,4 @@
 [run]
 omit =
     sharedlists/migration/*
+	sharedlists/bee.py

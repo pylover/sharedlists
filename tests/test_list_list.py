@@ -27,6 +27,10 @@ oscar/foo
 oscar/quux
 '''
 
+            when('Invalid list name', '/oscar/oscar')
+            assert status == 200
+            assert response.text == ''
+
         self.login('franz', '12345')
         with self.given('List lists', '/franz'):
             assert status == 200

@@ -34,8 +34,7 @@ class Root(RestController):
         else:
             format = lambda i: f'{i.ownerid}\t\t{i.title}'
 
-        for item in query:
-            yield f'{format(item)}{CR}'
+        return [f'{format(item)}{CR}' for item in query]
 
     @classmethod
     def _get_lists(cls, owner):
@@ -46,11 +45,9 @@ class Root(RestController):
             .order_by(Item.list)
 
         if not query.count():
-            yield ''
-            return
+            return ''
 
-        for l in query:
-            yield f'{l[0]}/{l[1]}{CR}'
+        return [f'{l[0]}/{l[1]}{CR}' for l in query]
 
     @text
     def info(self):
