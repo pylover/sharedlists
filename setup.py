@@ -12,6 +12,7 @@ with open(join(dirname(__file__), 'sharedlists', '__init__.py')) as v_file:
 
 dependencies = [
     #'restfulpy >= 3.3.0',
+    'easycli >= 1.3.1, < 2',
 
     # Deployment
     'gunicorn',
@@ -27,7 +28,8 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'sharedlists = sharedlists:cli_main'
+            'sharedlists = sharedlists:server_main',
+            'bee = sharedlists:client_main'
         ]
     }
 )
