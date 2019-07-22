@@ -3,7 +3,7 @@ from .application import SharedLists
 from .bee import Bee
 
 
-__version__ = '0.2.0a1'
+__version__ = '0.3.0a2'
 
 
 server_main = lambda: SharedLists().cli_main()
