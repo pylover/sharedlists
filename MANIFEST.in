@@ -1,2 +1,4 @@
 include sharedlists/alembic.ini
 include sharedlists/migration/**/*.py
+include sharedlists/install-server.sh
+
