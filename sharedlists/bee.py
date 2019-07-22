@@ -106,6 +106,11 @@ class Show(SubCommand):
     __aliases__ = ['s', 'l']
     __arguments__ = [
         Argument(
+            '-a', '--all',
+            action='store_true',
+            help='Get all action',
+        ),
+        Argument(
             'list',
             nargs='?',
             action=ListAction,
@@ -115,7 +120,7 @@ class Show(SubCommand):
     ]
 
     def __call__(self, args):
-        success(query('get', args.list))
+        success(query('get', '' if args.all else args.list))
 
 
 class Info(SubCommand):
