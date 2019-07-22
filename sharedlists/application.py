@@ -4,6 +4,7 @@ from restfulpy import Application
 
 from .controllers import Root
 from .authentication import Authenticator
+from .cli import UserCommand
 
 
 class SharedLists(Application):
@@ -37,6 +38,5 @@ class SharedLists(Application):
         DBSession.commit()
 
     def get_cli_arguments(self):
-        from .cli import UserCommand
         return [UserCommand]
 
