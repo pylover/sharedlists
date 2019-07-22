@@ -4,6 +4,7 @@ The client utility fo sharedlists
 
 import os
 import sys
+import urllib3
 import argparse
 import functools
 from os import path
@@ -12,6 +13,9 @@ from getpass import getpass
 from pymlconf import DeferredRoot
 from easycli import Root, SubCommand, Argument
 import requests
+
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 error = functools.partial(print, file=sys.stderr)
