@@ -23,18 +23,20 @@ class Root(RestController):
             .one_or_none()
 
     @classmethod
-    def _get_items(cls, owner, listtitle, *, verbose=None):
+    def _get_all_items(cls, owner):
+        query = DBSession.query(Item) \
+            .order_by(Item.listownerid, Item.list, Item.title)
+
+        return [f'{i.listownerid}/{i.list}/{i.title}{CR}' for i in query]
+
+    @classmethod
+    def _get_items(cls, owner, listtitle):
         query = DBSession.query(Item) \
             .filter(Item.listownerid == owner) \
             .filter(Item.list == listtitle) \
             .order_by(Item.id)
 
-        if verbose is None:
-            format = lambda i: f'{i.title}'
-        else:
-            format = lambda i: f'{i.ownerid}\t\t{i.title}'
-
-        return [f'{format(item)}{CR}' for item in query]
+        return [f'{i.title}{CR}' for i in query]
 
     @classmethod
     def _get_lists(cls, owner):
@@ -128,10 +130,12 @@ class Root(RestController):
         return ''.join((str(item), CR))
 
     @text
-    def get(self, owner=None, listtitle=None, *, verbose=None):
+    def get(self, owner=None, listtitle=None):
         if owner and listtitle:
-            return self._get_items(owner, listtitle, verbose=verbose)
+            return self._get_items(owner, listtitle)
 
         if owner:
             return self._get_lists(owner)
+
+        return self._get_all_items(owner)
 

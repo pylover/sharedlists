@@ -14,6 +14,7 @@ class TestItemList(RESTAPITestCase):
         oscar.items.append(Item(listowner=oscar, list='foo', title='bar'))
         franz.items.append(Item(listowner=oscar, list='foo', title='baz'))
         oscar.items.append(Item(listowner=oscar, list='foo', title='qux'))
+        oscar.items.append(Item(listowner=franz, list='quux', title='quuz'))
         session.add(oscar)
         session.add(franz)
         session.commit()
@@ -27,12 +28,14 @@ bar
 qux
 baz
 '''
-
-            when('List detailed items', query='verbose=true')
+        self.login('oscar', '12345')
+        with self.given('List all items', '/'):
             assert status == 200
             assert response.text == \
 f'''\
-oscar\t\tbar
-oscar\t\tqux
-franz\t\tbaz
+franz/quux/quuz
+oscar/foo/bar
+oscar/foo/baz
+oscar/foo/qux
 '''
+
