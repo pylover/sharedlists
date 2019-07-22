@@ -10,12 +10,15 @@ USERNAME="sl"
 CONFIGPATH="/etc/${INSTANCE}"
 CONFIGFILE="${CONFIGPATH}/${INSTANCE}.yml"
 DBNAME="${INSTANCE}"
+PYTHON=$(which python3.6)
+PIP=$(which pip3.6)
 
+curl https://bootstrap.pypa.io/get-pip.py | $PYTHON
 useradd -r ${USERNAME}
 
-echo "CREATE USER ${USUERNAME}" | sudo -u postgres psql
+echo "CREATE USER ${USERNAME}" | sudo -u postgres psql
 
-pip install .
+$PIP install .
 
 
 mkdir -p $CONFIGPATH
@@ -73,6 +76,8 @@ systemctl daemon-reload
 systemctl enable ${INSTANCE}.service
 service ${INSTANCE} start
 
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/sl-selfsigned.key -out /etc/ssl/certs/sl-selfsigned.crt
+openssl dhparam -out /etc/ssl/certs/sl-dhparam.pem 2048
 
 echo "
 upstream ${INSTANCE}_api {
@@ -81,13 +86,29 @@ upstream ${INSTANCE}_api {
 
 
 server {
-    listen 443;
+    listen 443 ssl http2;
+	
 
     location / {
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
       proxy_redirect off;
       proxy_pass http://${INSTANCE}_api;
     }
+
+	ssl_certificate /etc/ssl/certs/sl-selfsigned.crt;
+	ssl_certificate_key /etc/ssl/private/sl-selfsigned.key;
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+	ssl_prefer_server_ciphers on;
+	ssl_ciphers \"EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH\";
+	ssl_ecdh_curve secp384r1;
+	ssl_session_cache shared:SSL:10m;
+	ssl_session_tickets off;
+	ssl_stapling_verify on;
+	add_header Strict-Transport-Security \"max-age=63072000; includeSubdomains\";
+	add_header X-Frame-Options DENY;
+	add_header X-Content-Type-Options nosniff;
+
+	ssl_dhparam /etc/ssl/certs/sl-dhparam.pem;
 
 }
 " > /etc/nginx/sites-available/${INSTANCE}.conf

@@ -20,6 +20,7 @@ settings = DeferredRoot()
 CONFIGFILE = path.join(os.environ['HOME'], '.beerc')
 BUILTIMSETTINGS = '''
   url: http://localhost:5555
+  sslverify: true
   username:
   token:
 '''
@@ -47,6 +48,7 @@ def query(verb, path='/', form=None):
     if form:
         kw['data'] = form
 
+    kw['verify'] = settings.sslverify
     kw['headers'] = headers
     response = requests.request(
         verb.upper(),
