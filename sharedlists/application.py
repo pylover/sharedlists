@@ -36,3 +36,7 @@ class SharedLists(Application):
         DBSession.add(oscar)
         DBSession.commit()
 
+    def get_cli_arguments(self):
+        from .cli import UserCommand
+        return [UserCommand]
+
