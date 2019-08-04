@@ -32,6 +32,7 @@ BUILTIMSETTINGS = '''
   token:
 '''
 
+log = open('log', 'w')
 
 def dump_config():
     with open(CONFIGFILE, 'w') as f:
@@ -100,8 +101,12 @@ class Cache:
     def getlists(self, **kw):
         return self.lists
 
-    def getitems(self, **kw):
-        return self.items
+    def getitems(self, prefix, action, parser, parsed_args):
+        list_ = parsed_args.list
+        if not list_:
+            return (i[1] for i in self.items)
+
+        return (i[1] for i in self.items if i[0] == list_)
 
 
 cache = Cache()
@@ -119,12 +124,14 @@ class Delete(SubCommand):
         ),
         Argument(
             'item',
-            help='Item to delete'
+            help='Item to delete',
+            completer=cache.getitems
         )
     ]
 
     def __call__(self, args):
         success(query('delete', f'{args.list}/{args.item}'))
+        cache.refresh()
 
 
 class Append(SubCommand):
@@ -139,7 +146,8 @@ class Append(SubCommand):
         ),
         Argument(
             'item',
-            help='Item to add'
+            help='Item to add',
+            completer=cache.getitems
         )
     ]
 
