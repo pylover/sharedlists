@@ -15,7 +15,7 @@ from easycli import Root, SubCommand, Argument
 import requests
 
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+#urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 error = functools.partial(print, file=sys.stderr)

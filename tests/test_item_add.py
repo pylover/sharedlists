@@ -16,7 +16,7 @@ class TestItemAdd(RESTAPITestCase):
     def test_item_add_anonymous(self):
         with self.given(
             'Adding an item to a list by anonymous',
-            '/oscar/foo/bar',
+            '/foo/bar',
             'APPEND',
         ):
             assert status == 401
@@ -25,10 +25,10 @@ class TestItemAdd(RESTAPITestCase):
         self.login('oscar', '12345')
         with self.given(
             'Adding an item to a list by anonymous',
-            '/oscar/foo/bar',
+            '/foo/bar',
             'APPEND',
         ):
             assert status == 200
-            assert response.text == 'oscar/foo/bar\n'
+            assert response.text == 'foo/bar\n'
 
 

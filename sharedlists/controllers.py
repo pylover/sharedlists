@@ -23,41 +23,43 @@ class Root(RestController):
             .one_or_none()
 
     @classmethod
-    def _get_all_items(cls, owner):
+    def _get_all_items(cls):
         query = DBSession.query(Item) \
-            .order_by(Item.listownerid, Item.list, Item.title)
+            .filter(Item.ownerid == context.identity.id) \
+            .order_by(Item.ownerid, Item.list, Item.title)
 
-        return [f'{i.listownerid}/{i.list}/{i.title}{CR}' for i in query]
+        return [f'{i.list}/{i.title}{CR}' for i in query]
 
     @classmethod
-    def _get_items(cls, owner, listtitle):
+    def _get_items(cls, listtitle):
         query = DBSession.query(Item) \
-            .filter(Item.listownerid == owner) \
+            .filter(Item.ownerid == context.identity.id) \
             .filter(Item.list == listtitle) \
             .order_by(Item.id)
 
         return [f'{i.title}{CR}' for i in query]
 
     @classmethod
-    def _get_lists(cls, owner):
+    def _get_lists(cls):
         query = DBSession \
-            .query(Item.listownerid, Item.list) \
-            .filter(Item.ownerid == owner) \
-            .group_by(Item.listownerid, Item.list) \
+            .query(Item.list) \
+            .filter(Item.ownerid == context.identity.id) \
+            .group_by(Item.list) \
             .order_by(Item.list)
 
         if not query.count():
             return ''
 
-        return [f'{l[0]}/{l[1]}{CR}' for l in query]
+        return [f'{l[0]}{CR}' for l in query]
 
     @text
+    @authorize
     def info(self):
         from sharedlists import __version__ as appversion
 
         users = DBSession.query(User).count()
-        lists = DBSession.query(Item.listownerid, Item.list) \
-            .group_by(Item.listownerid, Item.list).count()
+        lists = DBSession.query(Item.ownerid, Item.list) \
+            .group_by(Item.ownerid, Item.list).count()
 
         result = [
             f'Shared Lists v{appversion}',
@@ -65,12 +67,16 @@ class Root(RestController):
             f'Total Users: {lists}',
         ]
 
-        me = self._get_current_user()
-        if me is not None:
-            mylists = DBSession.query(Item.listownerid, Item.list) \
-                .filter(Item.listownerid == me.id) \
-                .group_by(Item.listownerid, Item.list).count()
-            result.append(f'My Lists: {mylists}')
+        me = context.identity.id
+        mylists = DBSession.query(Item.ownerid, Item.list) \
+            .filter(Item.ownerid == me) \
+            .group_by(Item.ownerid, Item.list) \
+            .count()
+        myitems = DBSession.query(Item.ownerid, Item.list) \
+            .filter(Item.ownerid == me) \
+            .count()
+        result.append(f'My Lists: {mylists}')
+        result.append(f'My Items: {myitems}')
 
         result.append('')
         return CR.join(result)
@@ -98,10 +104,10 @@ class Root(RestController):
     @text
     @authorize
     @commit
-    def append(self, listownerid, listtitle, itemtitle):
+    def append(self, listtitle, itemtitle):
         me = self._get_current_user()
         item = Item(
-            listownerid=listownerid,
+            ownerid=context.identity.id,
             list=listtitle,
             title=itemtitle
         )
@@ -112,9 +118,10 @@ class Root(RestController):
     @text
     @authorize
     @commit
-    def delete(self, listowner, listtitle, itemtitle):
+    def delete(self, listtitle, itemtitle):
+        me = context.identity.id
         item = DBSession.query(Item) \
-            .filter(Item.listownerid == listowner) \
+            .filter(Item.ownerid == me) \
             .filter(Item.list == listtitle) \
             .filter(Item.title == itemtitle) \
             .one_or_none()
@@ -122,20 +129,17 @@ class Root(RestController):
         if item is None:
             raise HTTPNotFound()
 
-        me = self._get_current_user()
-        if me.id != item.ownerid or me.id != item.listownerid:
-            raise HTTPForbidden()
-
         DBSession.delete(item)
         return ''.join((str(item), CR))
 
     @text
-    def get(self, owner=None, listtitle=None):
-        if owner and listtitle:
-            return self._get_items(owner, listtitle)
+    @authorize
+    def get(self, listtitle=None):
+        if listtitle == 'all':
+            return self._get_all_items()
 
-        if owner:
-            return self._get_lists(owner)
+        if listtitle:
+            return self._get_items(listtitle)
 
-        return self._get_all_items(owner)
+        return self._get_lists()
 

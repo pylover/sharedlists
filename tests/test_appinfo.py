@@ -13,12 +13,10 @@ class TestApplicationInfo(RESTAPITestCase):
         oscar = User(id='oscar', email='oscar@example.com', password='12345')
         franz = User(id='franz', email='franz@example.com', password='12345')
         oscar.items.append(Item(
-            listowner=oscar,
             list='foo',
             title='bar'
         ))
-        oscar.items.append(Item(
-            listowner=franz,
+        franz.items.append(Item(
             list='quux',
             title='baz'
         ))
@@ -31,13 +29,7 @@ class TestApplicationInfo(RESTAPITestCase):
             'Getting the application information by an anonymous',
             verb='INFO'
         ):
-            assert status == '200 OK'
-            assert response.text == \
-f'''\
-Shared Lists v{appversion}
-Total Lists: 2
-Total Users: 2
-'''
+            assert status == 401
 
     def test_info_authenticated(self):
         self.login('oscar@example.com', '12345')
@@ -53,5 +45,6 @@ Shared Lists v{appversion}
 Total Lists: 2
 Total Users: 2
 My Lists: 1
+My Items: 1
 '''
 

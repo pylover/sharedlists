@@ -11,8 +11,8 @@ class TestItemDelete(RESTAPITestCase):
         session = cls.create_session()
         oscar = User(id='oscar', email='oscar@example.com', password='12345')
         franz = User(id='franz', email='franz@example.com', password='12345')
-        oscar.items.append(Item(listowner=oscar, list='foo', title='bar'))
-        franz.items.append(Item(listowner=oscar, list='foo', title='baz'))
+        oscar.items.append(Item(list='foo', title='bar'))
+        franz.items.append(Item(list='foo', title='baz'))
         session.add(oscar)
         session.add(franz)
         session.commit()
@@ -20,7 +20,7 @@ class TestItemDelete(RESTAPITestCase):
     def test_item_delete_anonymous(self):
         with self.given(
             'Delete an item from a list by anonymous',
-            '/oscar/foo/bar',
+            '/foo/bar',
             'DELETE',
         ):
             assert status == 401
@@ -29,15 +29,15 @@ class TestItemDelete(RESTAPITestCase):
         self.login('oscar', '12345')
         with self.given(
             'Delete an item from a list',
-            '/oscar/foo/bar',
+            '/foo/bar',
             'DELETE',
         ):
             assert status == 200
-            assert response.text == 'oscar/foo/bar\n'
+            assert response.text == 'foo/bar\n'
 
             when('Delete the item again')
             assert status == 404
 
-            when('Delete another\'s item', '/oscar/foo/baz')
-            assert status == 403
+            when('Delete another\'s item', '/foo/baz')
+            assert status == 404
 

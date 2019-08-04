@@ -11,32 +11,33 @@ class TestListList(RESTAPITestCase):
         session = cls.create_session()
         oscar = User(id='oscar', email='oscar@example.com', password='12345')
         franz = User(id='franz', email='franz@example.com', password='12345')
-        oscar.items.append(Item(listowner=oscar, list='foo', title='bar'))
-        franz.items.append(Item(listowner=oscar, list='foo', title='baz'))
-        oscar.items.append(Item(listowner=oscar, list='quux', title='qux'))
+        oscar.items.append(Item(list='foo', title='bar'))
+        oscar.items.append(Item(list='quux', title='qux'))
+        franz.items.append(Item(list='foo', title='baz'))
         session.add(oscar)
         session.add(franz)
         session.commit()
 
     def test_list_list(self):
-        with self.given('List lists', '/oscar'):
+        self.login('oscar', '12345')
+        with self.given('List lists', '/'):
             assert status == 200
             assert response.text == \
 f'''\
-oscar/foo
-oscar/quux
+foo
+quux
 '''
 
-            when('Invalid list name', '/oscar/oscar')
+            when('Invalid list name', '/invalid')
             assert status == 200
             assert response.text == ''
 
         self.login('franz', '12345')
-        with self.given('List lists', '/franz'):
+        with self.given('List lists', '/'):
             assert status == 200
             assert response.text == \
 f'''\
-oscar/foo
+foo
 '''
 
 class TestListEmptyList(RESTAPITestCase):
@@ -49,7 +50,7 @@ class TestListEmptyList(RESTAPITestCase):
         session.commit()
 
     def test_list_emptylist(self):
+        self.login('oscar', '12345')
         with self.given('List lists', '/oscar'):
             assert status == 200
             assert response.text == ''
-

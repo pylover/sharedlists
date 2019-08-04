@@ -122,11 +122,6 @@ class Item(ModifiedMixin, DeclarativeBase):
     )
 
     list = Field(LIST_TITLE_SQLTYPE)
-    listownerid = Field(ForeignKey('user.id'))
-    listowner = relationship(
-        'User',
-        foreign_keys=[listownerid]
-    )
 
     ownerid = Field(ForeignKey('user.id'))
     owner = relationship(
@@ -135,17 +130,16 @@ class Item(ModifiedMixin, DeclarativeBase):
         foreign_keys=[ownerid]
     )
 
-
     __table_args__ = (
         UniqueConstraint(
-            listownerid, list, title,
+            ownerid, list, title,
             name='uix_ownerid_list_title'
         ),
     )
 
     @property
     def fulltitle(self):
-        return f'{self.listownerid}/{self.list}/{self.title}'
+        return f'{self.list}/{self.title}'
 
     def __str__(self):
         return f'{self.fulltitle}'
