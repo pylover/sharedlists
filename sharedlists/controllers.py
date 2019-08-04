@@ -63,8 +63,8 @@ class Root(RestController):
 
         result = [
             f'Shared Lists v{appversion}',
-            f'Total Lists: {users}',
-            f'Total Users: {lists}',
+            f'Total Lists: {lists}',
+            f'Total Users: {users}',
         ]
 
         me = context.identity.id
