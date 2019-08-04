@@ -9,6 +9,7 @@ import argparse
 import functools
 from os import path
 from getpass import getpass
+from itertools import groupby
 
 from pymlconf import DeferredRoot
 from easycli import Root, SubCommand, Argument
@@ -21,6 +22,8 @@ import requests
 error = functools.partial(print, file=sys.stderr)
 success = functools.partial(print, end='')
 settings = DeferredRoot()
+CACHEPATH = path.join(os.environ['HOME'], '.cache', 'bee')
+CACHEFILE = path.join(CACHEPATH, 'items')
 CONFIGFILE = path.join(os.environ['HOME'], '.beerc')
 BUILTIMSETTINGS = '''
   url: http://localhost:5555
@@ -59,6 +62,51 @@ def query(verb, path='/', form=None):
     return response.text
 
 
+class Cache:
+    dirty = False
+    lists = []
+    items = []
+
+    def __init__(self):
+        self.loadfromfile()
+
+    def loadfromfile(self):
+        if not path.exists(CACHEFILE):
+            os.makedirs(path.dirname(CACHEFILE), exist_ok=True)
+            return
+
+        with open(CACHEFILE) as f:
+            self.items = sorted(
+                [i.strip().split('/', 1) for i in f.readlines()]
+            )
+
+            self.lists = list(i[0] for i in groupby(self.items, lambda x: x[0]))
+
+    def refresh(self):
+        with open(CACHEFILE, 'w') as f:
+            data = query('get', 'all')
+            f.write(data)
+
+        self.loadfromfile()
+        self.dirty = False
+
+    def invalidate(self):
+        self.dirty = True
+
+    def ensure(self):
+        if self.dirty:
+            self.refresh()
+
+    def getlists(self, **kw):
+        return self.lists
+
+    def getitems(self, **kw):
+        return self.items
+
+
+cache = Cache()
+
+
 class Delete(SubCommand):
     __command__ = 'delete'
     __aliases__ = ['d']
@@ -66,7 +114,8 @@ class Delete(SubCommand):
         Argument(
             'list',
             default='',
-            help='example: foo'
+            help='example: foo',
+            completer=cache.getlists
         ),
         Argument(
             'item',
@@ -85,7 +134,8 @@ class Append(SubCommand):
         Argument(
             'list',
             default='',
-            help='example: foo'
+            help='example: foo',
+            completer=cache.getlists
         ),
         Argument(
             'item',
@@ -95,6 +145,7 @@ class Append(SubCommand):
 
     def __call__(self, args):
         success(query('append', f'{args.list}/{args.item}'))
+        cache.refresh()
 
 
 class Show(SubCommand):
@@ -110,7 +161,8 @@ class Show(SubCommand):
             'list',
             nargs='?',
             default='',
-            help='example: foo'
+            help='example: foo',
+            completer=cache.getlists
         )
     ]
 
@@ -124,6 +176,7 @@ class Info(SubCommand):
 
     def __call__(self, args):
         success(query('info'))
+        cache.refresh()
 
 
 class Login(SubCommand):
@@ -142,6 +195,7 @@ class Login(SubCommand):
 
 class Bee(Root):
     __help__ = 'Sharedlists client'
+    __completion__ = True
     __arguments__ = [
         Login,
         Show,
