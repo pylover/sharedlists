@@ -75,7 +75,7 @@ class Delete(SubCommand):
             'list',
             action=ListAction,
             default='',
-            help='example: [username/]foo'
+            help='example: foo'
         ),
         Argument(
             'item',
@@ -95,7 +95,7 @@ class Append(SubCommand):
             'list',
             action=ListAction,
             default='',
-            help='example: [username/]foo'
+            help='example: foo'
         ),
         Argument(
             'item',
@@ -121,7 +121,7 @@ class Show(SubCommand):
             nargs='?',
             action=ListAction,
             default='',
-            help='example: [username/]foo'
+            help='example: foo'
         )
     ]
 

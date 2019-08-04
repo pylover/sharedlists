@@ -30,11 +30,31 @@ class AddUserSubCommand(SubCommand):
         DBSession.commit()
 
 
+class PasswdSubCommand(SubCommand):
+    __command__ = 'passwd'
+    __help__ = 'change a user\'s password'
+    __arguments__ = [
+        Argument(
+            'name',
+            help='Username',
+        ),
+    ]
+
+    def __call__(self, args):
+        user = DBSession.query(User).filter(User.id == args.name).one_or_none()
+        if user is None:
+            print(f'Invalid username: {args.name}', file=sys.stderr)
+            return 1
+
+        user.password=getpass()
+        DBSession.commit()
+
 
 class UserCommand(SubCommand):
     __command__ = 'user'
     __help__ = 'User administration'
     __arguments__ = [
         AddUserSubCommand,
+        PasswdSubCommand,
     ]
 
