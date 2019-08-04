@@ -46,7 +46,13 @@ class PasswdSubCommand(SubCommand):
             print(f'Invalid username: {args.name}', file=sys.stderr)
             return 1
 
-        user.password=getpass()
+        password=getpass('New Password:')
+        confirm=getpass('Again:')
+        if password != confirm:
+            print(f'Passwords are mismatch.', file=sys.stderr)
+            return 1
+
+        user.password=password
         DBSession.commit()
 
 

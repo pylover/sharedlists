@@ -30,14 +30,6 @@ BUILTIMSETTINGS = '''
 '''
 
 
-class ListAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        if '/' not in values:
-            values = f'{settings.username}/{values}'
-
-        setattr(namespace, self.dest, values)
-
-
 def dump_config():
     with open(CONFIGFILE, 'w') as f:
         f.write(settings.dumps())
@@ -61,8 +53,8 @@ def query(verb, path='/', form=None):
     )
 
     if response.status_code != 200:
-        error(response.status_code, response.reason)
-        return
+        error(response.status_code, response.reason, '')
+        return ''
 
     return response.text
 
@@ -73,7 +65,6 @@ class Delete(SubCommand):
     __arguments__ = [
         Argument(
             'list',
-            action=ListAction,
             default='',
             help='example: foo'
         ),
@@ -93,7 +84,6 @@ class Append(SubCommand):
     __arguments__ = [
         Argument(
             'list',
-            action=ListAction,
             default='',
             help='example: foo'
         ),
@@ -119,7 +109,6 @@ class Show(SubCommand):
         Argument(
             'list',
             nargs='?',
-            action=ListAction,
             default='',
             help='example: foo'
         )
