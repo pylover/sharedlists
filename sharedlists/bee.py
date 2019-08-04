@@ -115,7 +115,7 @@ class Show(SubCommand):
     ]
 
     def __call__(self, args):
-        success(query('get', '' if args.all else args.list))
+        success(query('get', 'all' if args.all else args.list))
 
 
 class Info(SubCommand):
@@ -155,7 +155,10 @@ class Bee(Root):
         if not path.exists(CONFIGFILE):
             dump_config()
         settings.load_file(CONFIGFILE)
-        super().main(argv=argv)
+        return super().main(argv=argv)
+
+    def __call__(self, args):
+        success(query('get'))
 
 
 if __name__ == '__main__':
